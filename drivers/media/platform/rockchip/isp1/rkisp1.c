@@ -1654,7 +1654,6 @@ void rkisp1_unregister_isp_subdev(struct rkisp1_device *isp_dev)
 
 void rkisp1_mipi_isr(unsigned int mis, struct rkisp1_device *dev)
 {
-	struct v4l2_device *v4l2_dev = &dev->v4l2_dev;
 	void __iomem *base = dev->base_addr;
 	u32 val;
 
@@ -1688,7 +1687,7 @@ void rkisp1_mipi_isr(unsigned int mis, struct rkisp1_device *dev)
 			dev->isp_sdev.dphy_errctrl_disabled = false;
 		}
 	} else {
-		v4l2_warn(v4l2_dev, "MIPI mis error: 0x%08x\n", mis);
+		pr_warn_ratelimited("rkisp1: MIPI mis error: 0x%08x\n", mis);
 		val = readl(base + CIF_MIPI_CTRL);
 		writel(val | CIF_MIPI_CTRL_FLUSH_FIFO, base + CIF_MIPI_CTRL);
 	}

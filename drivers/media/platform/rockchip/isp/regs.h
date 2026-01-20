@@ -37,6 +37,7 @@
 #include "dev.h"
 #include "regs_v2x.h"
 #include "regs_v3x.h"
+#include "vpsl_reg.h"
 
 #define CIF_ISP_PACK_4BYTE(a, b, c, d)	\
 	(((a) & 0xFF) << 0 | ((b) & 0xFF) << 8 | \
@@ -405,6 +406,7 @@
 #define CIF_CSI2_DT_RAW8			0x2A
 #define CIF_CSI2_DT_RAW10			0x2B
 #define CIF_CSI2_DT_RAW12			0x2C
+#define CIF_CSI2_DT_RAW14			0x2D
 #define CIF_CSI2_DT_RAW16			0x2e
 #define CIF_CSI2_DT_SPD				0x2F
 

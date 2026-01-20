@@ -922,6 +922,11 @@ static int mi_frame_start(struct rkisp_stream *stream, u32 mis)
 
 	/* readback start to update stream buf if null */
 	spin_lock_irqsave(&stream->vbq_lock, lock_flags);
+	if (stream->streaming && !mis && stream->is_crop_upd) {
+		rkisp_stream_config_dcrop(stream, false);
+		rkisp_stream_config_rsz(stream, false);
+		stream->is_crop_upd = false;
+	}
 	if (stream->streaming && !mis && !stream->curr_buf) {
 		if (!stream->next_buf && !list_empty(&stream->buf_queue)) {
 			stream->next_buf = list_first_entry(&stream->buf_queue,
@@ -1036,7 +1041,7 @@ static int mi_frame_end(struct rkisp_stream *stream, u32 state)
 		stream->dbg.interval = ns - stream->dbg.timestamp;
 		stream->dbg.timestamp = ns;
 		stream->dbg.id = buf->vb.sequence;
-		stream->dbg.delay = ns - dev->isp_sdev.frm_timestamp;
+		stream->dbg.delay = ns - vb2_buf->timestamp;
 
 		if (vir->streaming && vir->conn_id == stream->id) {
 			spin_lock_irqsave(&vir->vbq_lock, lock_flags);
@@ -1414,7 +1419,7 @@ rkisp_start_streaming(struct vb2_queue *queue, unsigned int count)
 	memset(&stream->dbg, 0, sizeof(stream->dbg));
 	atomic_inc(&dev->cap_dev.refcnt);
 	if (!dev->isp_inp || !stream->linked) {
-		v4l2_err(v4l2_dev, "check %s link or isp input\n", node->vdev.name);
+		v4l2_warn_once(v4l2_dev, "check %s link or isp input\n", node->vdev.name);
 		goto buffer_done;
 	}
 

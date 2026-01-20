@@ -96,6 +96,7 @@ enum rkcsi2_chip_id {
 	CHIP_RK3562_CSI2,
 	CHIP_RK3576_CSI2,
 	CHIP_RV1103B_CSI2,
+	CHIP_RV1126B_CSI2,
 };
 
 enum csi2_pads {
@@ -112,6 +113,13 @@ enum csi2_err {
 	RK_CSI2_ERR_FRM_SEQ_ERR,
 	RK_CSI2_ERR_CRC_ONCE,
 	RK_CSI2_ERR_CRC,
+	RK_CSI2_ERR_ECC2,
+	RK_CSI2_ERR_CTRL,
+	RK_CSI2_ERR_ULPM,
+	RK_CSI2_ERR_SOT,
+	RK_CSI2_ERR_ECC,
+	RK_CSI2_ERR_ID,
+	RK_CSI2_ERR_CODE,
 	RK_CSI2_ERR_ALL,
 	RK_CSI2_ERR_MAX
 };
@@ -151,7 +159,7 @@ struct csi2_dev {
 
 	void __iomem		*base;
 	struct v4l2_async_notifier	notifier;
-	struct v4l2_mbus_config_mipi_csi2	bus;
+	struct v4l2_mbus_config mbus;
 
 	/* lock to protect all members below */
 	struct mutex lock;
@@ -175,6 +183,8 @@ struct csi2_dev {
 	struct rkcif_csi_info	csi_info;
 	const char		*dev_name;
 	int			sw_dbg;
+	u64			irq1_timestamp;
+	u64			irq2_timestamp;
 };
 
 struct csi2_hw {
@@ -194,6 +204,7 @@ struct csi2_hw {
 	int			irq1;
 	int			irq2;
 	const char		*dev_name;
+	atomic_t		stream_count;
 };
 
 u32 rkcif_csi2_get_sof(struct csi2_dev *csi2_dev);
@@ -206,5 +217,10 @@ void rkcif_csi2_hw_plat_drv_exit(void);
 int rkcif_csi2_register_notifier(struct notifier_block *nb);
 int rkcif_csi2_unregister_notifier(struct notifier_block *nb);
 void rkcif_csi2_event_reset_pipe(struct csi2_dev *csi2_dev, int reset_src);
+
+#ifndef v4l2_warn_once
+#define v4l2_warn_once(dev, fmt, arg...) \
+	printk_once(KERN_WARNING "%s: " fmt, (dev)->name , ## arg)
+#endif
 
 #endif
